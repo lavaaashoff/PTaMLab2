@@ -40,10 +40,10 @@ namespace PTaMLab2
                         case "help":
                             HandleHelp(commandLine);
                             break;
-                        case "demo":
-                            RunDemos();
-                            break;
-                        case "exit":
+                        //case "demo":
+                        //    RunDemos();
+                        //    break;
+                        case "exit": //новые кейсы для выхода и справки
                             HandleExit();
                             return;
                         default:
@@ -59,7 +59,7 @@ namespace PTaMLab2
             }
         }
 
-        // ── Обработчики команд оболочки ─────────────────────────────────────────
+        //Обработчики команд оболочки 
 
         static void HandleCreate(string commandLine)
         {
@@ -324,115 +324,118 @@ namespace PTaMLab2
             }
         }
 
-        // ── Хардкод демонстрации (вызываются командой demo) ──────────────────────
 
-        static void RunDemos()
-        {
-            Console.WriteLine("\nЗапуск демонстраций...\n");
-            DemoInt();
-            DemoChar();
-            DemoVarchar();
-            Console.WriteLine("\nВсе тесты завершены.\n");
-        }
+        //новые функции обработки 
 
-        static void DemoInt()
-        {
-            Console.WriteLine("══ Режим INT ══════════════════════════════");
-            const string f = "demo_int.vm";
-            if (File.Exists(f)) File.Delete(f);
+        // Хардкод демонстрации (вызываются командой demo) 
 
-            using (var vm = new VirtualMemory(f, 10000, "int"))
-            {
-                vm.PrintInfo();
+    //    static void RunDemos()
+    //    {
+    //        Console.WriteLine("\nЗапуск демонстраций...\n");
+    //        DemoInt();
+    //        DemoChar();
+    //        DemoVarchar();
+    //        Console.WriteLine("\nВсе тесты завершены.\n");
+    //    }
 
-                vm.WriteInt(0, 42);
-                vm.WriteInt(63, 1000);
-                vm.WriteInt(64, -7);
-                vm.WriteInt(9999, long.MaxValue);
+    //    static void DemoInt()
+    //    {
+    //        Console.WriteLine("══ Режим INT ══════════════════════════════");
+    //        const string f = "demo_int.vm";
+    //        if (File.Exists(f)) File.Delete(f);
 
-                Console.WriteLine("\nЗапись и чтение:");
-                foreach (long idx in new long[] { 0, 63, 64, 200, 9999 })
-                {
-                    long v = vm.ReadInt(idx);
-                    Console.WriteLine($"  [{idx,5}] = {v,22}   init={vm.IsInitialized(idx)}");
-                }
+    //        using (var vm = new VirtualMemory(f, 10000, "int"))
+    //        {
+    //            vm.PrintInfo();
 
-                vm.WriteInt(0, -999);
-                Console.WriteLine($"\n  [0] после перезаписи = {vm.ReadInt(0)}");
+    //            vm.WriteInt(0, 42);
+    //            vm.WriteInt(63, 1000);
+    //            vm.WriteInt(64, -7);
+    //            vm.WriteInt(9999, long.MaxValue);
 
-                Console.WriteLine("\nЧерез индексатор []:");
-                vm[10] = 12345L;
-                long read = vm[10];
-                Console.WriteLine($"  vm[10] = {read}   (ожидается 12345)");
-            }
+    //            Console.WriteLine("\nЗапись и чтение:");
+    //            foreach (long idx in new long[] { 0, 63, 64, 200, 9999 })
+    //            {
+    //                long v = vm.ReadInt(idx);
+    //                Console.WriteLine($"  [{idx,5}] = {v,22}   init={vm.IsInitialized(idx)}");
+    //            }
 
-            Console.WriteLine("\nПовторное открытие:");
-            using var vm2 = new VirtualMemory(f, 10000, "int");
-            Console.WriteLine($"  [0]    = {vm2.ReadInt(0)}   (ожидается -999)");
-            Console.WriteLine($"  [9999] = {vm2.ReadInt(9999)}   (ожидается {long.MaxValue})");
-        }
+    //            vm.WriteInt(0, -999);
+    //            Console.WriteLine($"\n  [0] после перезаписи = {vm.ReadInt(0)}");
 
-        static void DemoChar()
-        {
-            Console.WriteLine("\n══ Режим CHAR (фикс. длина 20 байт) ══════");
-            const string f = "demo_char.vm";
-            const int STRLEN = 25;
-            if (File.Exists(f)) File.Delete(f);
+    //            Console.WriteLine("\nЧерез индексатор []:");
+    //            vm[10] = 12345L;
+    //            long read = vm[10];
+    //            Console.WriteLine($"  vm[10] = {read}   (ожидается 12345)");
+    //        }
 
-            using (var vm = new VirtualMemory(f, 10000, "char", STRLEN))
-            {
-                vm.PrintInfo();
+    //        Console.WriteLine("\nПовторное открытие:");
+    //        using var vm2 = new VirtualMemory(f, 10000, "int");
+    //        Console.WriteLine($"  [0]    = {vm2.ReadInt(0)}   (ожидается -999)");
+    //        Console.WriteLine($"  [9999] = {vm2.ReadInt(9999)}   (ожидается {long.MaxValue})");
+    //    }
 
-                vm.WriteString(0, "Привет мир");
-                vm.WriteString(127, "last on page 0");
-                vm.WriteString(128, "first on page 1");
-                vm.WriteString(9999, "конец массива");
+    //    static void DemoChar()
+    //    {
+    //        Console.WriteLine("\n══ Режим CHAR (фикс. длина 20 байт) ══════");
+    //        const string f = "demo_char.vm";
+    //        const int STRLEN = 25;
+    //        if (File.Exists(f)) File.Delete(f);
 
-                Console.WriteLine("\nЗапись и чтение:");
-                foreach (long idx in new long[] { 0, 127, 128, 500, 9999 })
-                {
-                    string v = vm.ReadString(idx);
-                    Console.WriteLine($"  [{idx,5}] = \"{v ?? "null"}\"   init={vm.IsInitialized(idx)}");
-                }
-            }
+    //        using (var vm = new VirtualMemory(f, 10000, "char", STRLEN))
+    //        {
+    //            vm.PrintInfo();
 
-            Console.WriteLine("\nПовторное открытие:");
-            using var vm2 = new VirtualMemory(f, 10000, "char", STRLEN);
-            Console.WriteLine($"  [0]    = \"{vm2.ReadString(0)}\"");
-            Console.WriteLine($"  [9999] = \"{vm2.ReadString(9999)}\"");
-        }
+    //            vm.WriteString(0, "Привет мир");
+    //            vm.WriteString(127, "last on page 0");
+    //            vm.WriteString(128, "first on page 1");
+    //            vm.WriteString(9999, "конец массива");
 
-        static void DemoVarchar()
-        {
-            Console.WriteLine("\n══ Режим VARCHAR (maxLen=100) ══════════════");
-            const string f = "demo_varchar.vm";
-            const string fDat = "demo_varchar.dat";
-            const int MAXLEN = 100;
-            if (File.Exists(f)) File.Delete(f);
-            if (File.Exists(fDat)) File.Delete(fDat);
+    //            Console.WriteLine("\nЗапись и чтение:");
+    //            foreach (long idx in new long[] { 0, 127, 128, 500, 9999 })
+    //            {
+    //                string v = vm.ReadString(idx);
+    //                Console.WriteLine($"  [{idx,5}] = \"{v ?? "null"}\"   init={vm.IsInitialized(idx)}");
+    //            }
+    //        }
 
-            using (var vm = new VirtualMemory(f, 10000, "varchar", MAXLEN))
-            {
-                vm.PrintInfo();
+    //        Console.WriteLine("\nПовторное открытие:");
+    //        using var vm2 = new VirtualMemory(f, 10000, "char", STRLEN);
+    //        Console.WriteLine($"  [0]    = \"{vm2.ReadString(0)}\"");
+    //        Console.WriteLine($"  [9999] = \"{vm2.ReadString(9999)}\"");
+    //    }
 
-                vm.WriteString(0, "Короткая");
-                vm.WriteString(1, "Строка средней длины для теста");
-                vm.WriteString(63, "последняя на странице 0");
-                vm.WriteString(64, "первая на странице 1");
-                vm.WriteString(9999, "самая последняя запись в массиве");
+    //    static void DemoVarchar()
+    //    {
+    //        Console.WriteLine("\n══ Режим VARCHAR (maxLen=100) ══════════════");
+    //        const string f = "demo_varchar.vm";
+    //        const string fDat = "demo_varchar.dat";
+    //        const int MAXLEN = 100;
+    //        if (File.Exists(f)) File.Delete(f);
+    //        if (File.Exists(fDat)) File.Delete(fDat);
 
-                Console.WriteLine("\nЗапись и чтение:");
-                foreach (long idx in new long[] { 0, 1, 63, 64, 500, 9999 })
-                {
-                    string v = vm.ReadString(idx);
-                    Console.WriteLine($"  [{idx,5}] = \"{v ?? "null"}\"   init={vm.IsInitialized(idx)}");
-                }
-            }
+    //        using (var vm = new VirtualMemory(f, 10000, "varchar", MAXLEN))
+    //        {
+    //            vm.PrintInfo();
 
-            Console.WriteLine("\nПовторное открытие:");
-            using var vm2 = new VirtualMemory(f, 10000, "varchar", MAXLEN);
-            Console.WriteLine($"  [0]    = \"{vm2.ReadString(0)}\"");
-            Console.WriteLine($"  [9999] = \"{vm2.ReadString(9999)}\"");
-        }
+    //            vm.WriteString(0, "Короткая");
+    //            vm.WriteString(1, "Строка средней длины для теста");
+    //            vm.WriteString(63, "последняя на странице 0");
+    //            vm.WriteString(64, "первая на странице 1");
+    //            vm.WriteString(9999, "самая последняя запись в массиве");
+
+    //            Console.WriteLine("\nЗапись и чтение:");
+    //            foreach (long idx in new long[] { 0, 1, 63, 64, 500, 9999 })
+    //            {
+    //                string v = vm.ReadString(idx);
+    //                Console.WriteLine($"  [{idx,5}] = \"{v ?? "null"}\"   init={vm.IsInitialized(idx)}");
+    //            }
+    //        }
+
+    //        Console.WriteLine("\nПовторное открытие:");
+    //        using var vm2 = new VirtualMemory(f, 10000, "varchar", MAXLEN);
+    //        Console.WriteLine($"  [0]    = \"{vm2.ReadString(0)}\"");
+    //        Console.WriteLine($"  [9999] = \"{vm2.ReadString(9999)}\"");
+    //    }
     }
 }
