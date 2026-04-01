@@ -80,20 +80,21 @@ namespace PTaMLab2
         /// </summary>
         private static void HandleCreate(string commandLine)
         {
-            // Разбор: Create имя_файла(тип)
+            // Разбор: Create имя_файла(тип) [размер]
             var match = Regex.Match(commandLine,
-                @"^create\s+(.+?)\s*\((.+)\)\s*$", RegexOptions.IgnoreCase);
+                @"^create\s+(.+?)\s*\((.+)\)\s*(\d+)?\s*$", RegexOptions.IgnoreCase);
 
             if (!match.Success)
             {
                 Console.WriteLine(
                     "Ошибка синтаксиса. Формат: " +
-                    "Create имя_файла(int | char(длина) | varchar(макс_длина))");
+                    "Create имя_файла(int | char(длина) | varchar(макс_длина)) [размер]");
                 return;
             }
 
             string fileName = match.Groups[1].Value.Trim();
             string typeDef = match.Groups[2].Value.Trim().ToLower();
+            string sizeStr = match.Groups[3].Value.Trim();
 
             string arrayType = "";
             int strLen = 0;
@@ -124,6 +125,19 @@ namespace PTaMLab2
                 return;
             }
 
+            // Определяем размер массива
+            const long DEFAULT_ARRAY_SIZE = 10000;
+            long arraySize = DEFAULT_ARRAY_SIZE;
+
+            if (!string.IsNullOrEmpty(sizeStr))
+            {
+                if (!long.TryParse(sizeStr, out arraySize) || arraySize <= 0)
+                {
+                    Console.WriteLine("Ошибка: размер массива должен быть положительным целым числом.");
+                    return;
+                }
+            }
+
             // Закрываем предыдущий файл, если открыт
             CloseCurrentVm();
 
@@ -137,15 +151,12 @@ namespace PTaMLab2
                     File.Delete(datPath);
             }
 
-            // Размерность массива: > 10000 по заданию
-            const long ARRAY_SIZE = 10000;
-
-            s_currentVm = new VirtualMemory(fileName, ARRAY_SIZE, arrayType, strLen);
+            s_currentVm = new VirtualMemory(fileName, arraySize, arrayType, strLen);
             s_currentFile = fileName;
 
             Console.WriteLine(
                 $"Файл '{fileName}' создан. " +
-                $"Тип: {arrayType}, размер: {ARRAY_SIZE} элементов.");
+                $"Тип: {arrayType}, размер: {arraySize} элементов.");
         }
 
         /// <summary>
@@ -352,14 +363,17 @@ namespace PTaMLab2
             return
                 "Команды программы Virtual Memory (VM>):\n" +
                 "\n" +
-                "  Create имя_файла(int)\n" +
+                "  Create имя_файла(int) [размер]\n" +
                 "    — создать файл массива целых чисел (long, 8 байт).\n" +
+                "      размер — количество элементов (по умолчанию: 10000).\n" +
                 "\n" +
-                "  Create имя_файла(char(длина))\n" +
+                "  Create имя_файла(char(длина)) [размер]\n" +
                 "    — создать файл массива строк фиксированной длины.\n" +
+                "      размер — количество элементов (по умолчанию: 10000).\n" +
                 "\n" +
-                "  Create имя_файла(varchar(макс_длина))\n" +
+                "  Create имя_файла(varchar(макс_длина)) [размер]\n" +
                 "    — создать файл массива строк произвольной длины.\n" +
+                "      размер — количество элементов (по умолчанию: 10000).\n" +
                 "\n" +
                 "  Open имя_файла\n" +
                 "    — открыть существующий файл подкачки.\n" +
